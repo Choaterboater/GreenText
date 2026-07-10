@@ -1,66 +1,45 @@
 # GreenText
 
-GreenText is a standalone desktop text and network configuration editor. The first milestone focuses on BBEdit/Notepad++ style editing with Monaco-powered language coloring, auto-indent, a one-click **Pretty Indent** action, safer native file open/save, and built-in Aruba/Juniper/Mist template packs.
+GreenText is a modern, cross-platform standalone network configuration editor built to be a massive upgrade over generic text editors. Think of it as a lightning-fast combination of BBEdit and Termius, built specifically for network engineers working with **Aruba**, **Juniper**, and **Mist**.
 
-## Current features
+![GreenText — Editor](docs/screenshots/01-editor.png)
 
-- Tauri + React + TypeScript desktop shell
-- Monaco editor bundled locally with editor-only theme presets
-- Tabs/buffers with dirty tracking
-- Native open/save/save-as through Tauri, with browser fallback during web preview
-- Language modes for Aruba CX, Aruba AOS-S, Aruba wireless/controller, Juniper Junos, Mist/Apstra, and common general languages
-- Auto language detection from file extension and config fingerprints
-- Format-on-type/paste controls plus a visible **Pretty Indent** button
-- Built-in network templates for Aruba CX, Aruba AOS-S, Aruba wireless, Juniper Junos, and Mist/Apstra workflows
-- Expanded template library for switching, routing, security, management, wireless, Apstra/Mist intent, and change planning
-- Project-folder browser for text/config files
-- Recent files list
-- Edit, split, saved-copy diff, and arbitrary open-buffer compare modes
-- Command palette with keyboard shortcuts
-- Handy automations: explain selection, local config risk review, template-variable extraction, change checklist, sort lines, trim whitespace, duplicate line/selection, and timestamp insertion
-- Backend-scoped native file/folder access with restrictive CSP
-- Native File/Edit/View/Tools menus wired to editor commands
-- Encoding detection for UTF-8, UTF-8 BOM, UTF-16 LE/BE, and Latin-1 fallback
-- EOL display and LF/CRLF conversion commands
-- Backend Find in Project with literal/regex and case-sensitive options, plus clickable results
-- Config outline navigation for network sections
-- Draft recovery, dirty-close guard, Save All, and Revert
-- Editor zoom controls with shortcuts
-- Pinned tabs and tab sorting by name, language, dirty state, or path
-- Project file sorting by path, name, type, or size, with optional directory grouping
-- Problem scanning that reports in the status bar and only opens Tools when issues need inspection
-- Auto-detect action for language/color mode
+## What Makes GreenText Different?
 
-## Editor themes
+Standard text editors break when you paste massive firewall policies or dump thousands of lines of log files containing weird control characters. GreenText is purpose-built to handle massive networking files safely while integrating directly with your remote systems.
 
-The theme selector changes only the Monaco editor, not the app chrome:
+### 🌟 Core Capabilities
+- **Tauri + React + TypeScript + Tailwind CSS** architecture.
+- **Monaco Editor Engine** with specific parsing optimizations for massive text payloads.
+- **Deep-Slate UI** modeled closely on the GreenCLI design system.
+- **Multi-File Workspace** handling directories gracefully with instant Rust-powered regex search.
+- **Interactive Diff Engine** for comparing dirty config against saved files.
 
-- Neutral Dark
-- Google Gray
-- GreenCLI Slate
-- Soft Gray
+### 🛠 Powerful Text Processing
+The **Inspector Panel** contains an armory of tools that instantly clean up bad configs:
+- **Pretty Indent**: Auto-format entire Aruba/Juniper configurations in one click.
+- **Process Duplicate Lines**: Deduplicate massive prefix/access lists without sorting them.
+- **Zap Gremlins**: Instantly wipe non-ASCII control characters that cause terminal crashes.
+- **Sort / Reverse Lines**: Organize long blocks of interfaces alphabetically.
+- **Change Case**: Rapidly normalize standard uppercase `DESCRIPTION` fields.
 
-## Shortcuts
+### 🔌 Connected Workflows
+- **SSH / Telnet Terminal**: `xterm.js` embedded directly in your editor tabs to hit remote boxes.
+- **SFTP Browser**: Graphically browse remote file systems over SSH and pull files right into GreenText.
+- **Encrypted Credential Vault**: Store passwords and keys locally via AES-256-GCM.
+- **MCP Servers Panel**: Spin up and manage Model Context Protocol AI integrations right from the UI.
+- **Regex Pattern Playground**: Extract the current file and live-test complex regex patterns with immediate visual feedback on capture groups.
 
-| Shortcut | Action |
-| --- | --- |
-| Cmd/Ctrl+P | Command palette |
-| Cmd/Ctrl+= | Zoom in |
-| Cmd/Ctrl+- | Zoom out |
-| Cmd/Ctrl+0 | Reset zoom |
-| Cmd/Ctrl+N | New buffer |
-| Cmd/Ctrl+O | Open file |
-| Cmd/Ctrl+Shift+O | Open project folder |
-| Cmd/Ctrl+S | Save |
-| Cmd/Ctrl+Shift+S | Save As |
-| Cmd/Ctrl+Shift+F | Find in project |
-| Cmd/Ctrl+Alt+Shift+F | Pretty Indent |
-| Cmd/Ctrl+F | Find |
-| Cmd/Ctrl+Alt+F | Find and replace |
-| Cmd/Ctrl+B | Toggle sidebar |
-| Cmd/Ctrl+\\ | Toggle split view |
-| Cmd/Ctrl+Shift+G | Toggle diff view |
-| Cmd/Ctrl+Shift+D | Duplicate line/selection |
+## Current Features
+
+- Auto language detection from file extension and config fingerprints.
+- Language modes for Aruba CX, Aruba AOS-S, Aruba wireless/controller, Juniper Junos, Mist/Apstra, and common general languages.
+- Expanded template library for switching, routing, security, management, wireless, Apstra/Mist intent, and change planning.
+- Backend-scoped native file/folder access with restrictive CSP.
+- Native File/Edit/View/Text/Tools menus wired directly to editor commands.
+- Encoding detection for UTF-8, UTF-8 BOM, UTF-16 LE/BE, and Latin-1 fallback.
+- EOL display and LF/CRLF conversion commands.
+- Draft recovery, dirty-close guard, Save All, and Revert.
 
 ## Development
 
