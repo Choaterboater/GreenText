@@ -57,7 +57,7 @@ export function Sidebar({ orderedBuffers, openProjectFile, projectFileGroups }: 
               onClick={() => setActiveBufferId(buffer.id)}
             >
               <span className="flex items-center gap-1.5 max-w-[100%]">
-                <span className={`inline-flex items-center min-h-[16px] px-1.5 border rounded-full text-[10px] font-extrabold whitespace-nowrap ${buffer.pinned ? 'border-[#9aa7b4]/32 text-[#ff8300] bg-[#9aa7b4]/[0.08]' : 'border-[#9aa7b4]/28 text-[#9aa7b4] bg-[#9aa7b4]/[0.08]'}`}>{buffer.pinned ? 'Pinned' : 'Tab'}</span>
+                <span className={`inline-flex items-center justify-center w-3.5 h-3.5 rounded-sm text-[9px] font-black ${buffer.pinned ? 'text-[#ff8300]' : 'text-[#5d6b7a]'}`} title={buffer.pinned ? 'Pinned' : 'Open buffer'}>{buffer.pinned ? '★' : '·'}</span>
                 <span className="max-w-[100%] overflow-hidden text-ellipsis whitespace-nowrap">{buffer.name}{buffer.dirty ? ' *' : ''}</span>
               </span>
               <small className="text-[#9aa7b4] text-[11px] leading-snug">{buffer.filePath ?? 'unsaved'}</small>
@@ -95,12 +95,19 @@ export function Sidebar({ orderedBuffers, openProjectFile, projectFileGroups }: 
             {projectFileGroups.map((group) => (
               <div className="flex flex-col gap-1.5 pb-1.5" key={group.directory}>
                 {groupProjectFiles ? <strong className="sticky top-0 z-[1] px-1.5 py-1 rounded-lg text-[#2ece8a] bg-[#0f141c]/96 text-[10px] tracking-wider uppercase">{group.directory}</strong> : null}
-                {group.files.map((file) => (
-                  <button className="flex flex-col items-start w-full min-h-[26px] px-1.5 py-1 text-left rounded-md border border-transparent hover:bg-[#1a222c] hover:border-[#30404f] text-[#9aa7b4]" key={file.path} type="button" onClick={() => openProjectFile(file)}>
-                    <span className="max-w-[100%] overflow-hidden text-ellipsis whitespace-nowrap text-[#e6edf3] text-[12px]">{file.relativePath.split('/').pop()}</span>
-                    <small className="text-[#9aa7b4] text-[11px] leading-snug">{groupProjectFiles ? `${(file.size / 1024).toFixed(1)} KB` : file.relativePath}</small>
+                {group.files.map((file) => {
+                  const fileName = file.relativePath.split('/').pop() ?? file.relativePath;
+                  const ext = fileName.includes('.') ? fileName.split('.').pop()!.slice(0, 4) : '·';
+                  return (
+                  <button className="flex items-center gap-2 w-full min-h-[26px] px-1.5 py-1 text-left rounded-md border border-transparent hover:bg-[#1a222c] hover:border-[#30404f] text-[#9aa7b4]" key={file.path} type="button" onClick={() => openProjectFile(file)}>
+                    <span className="inline-flex items-center justify-center min-w-[26px] h-[16px] px-1 rounded bg-[#141a23] text-[#6b7785] text-[9px] font-mono font-bold uppercase shrink-0">{ext}</span>
+                    <span className="flex flex-col min-w-0">
+                      <span className="max-w-[100%] overflow-hidden text-ellipsis whitespace-nowrap text-[#e6edf3] text-[12px]">{fileName}</span>
+                      <small className="text-[#9aa7b4] text-[11px] leading-snug overflow-hidden text-ellipsis whitespace-nowrap">{groupProjectFiles ? `${(file.size / 1024).toFixed(1)} KB` : file.relativePath}</small>
+                    </span>
                   </button>
-                ))}
+                  );
+                })}
               </div>
             ))}
           </div>
