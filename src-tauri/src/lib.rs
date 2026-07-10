@@ -660,6 +660,19 @@ fn setup_menu(app: &AppHandle) -> tauri::Result<()> {
 
   let menu = MenuBuilder::new(app)
     .item(
+      &SubmenuBuilder::new(app, "GreenText")
+        .about(None)
+        .separator()
+        .services()
+        .separator()
+        .hide()
+        .hide_others()
+        .show_all()
+        .separator()
+        .quit()
+        .build()?,
+    )
+    .item(
       &SubmenuBuilder::new(app, "File")
         .text("file-new", "New")
         .text("file-open", "Open...")
@@ -670,6 +683,8 @@ fn setup_menu(app: &AppHandle) -> tauri::Result<()> {
         .text("file-save-all", "Save All")
         .separator()
         .text("file-revert", "Revert")
+        .separator()
+        .close_window()
         .build()?,
     )
     .item(
