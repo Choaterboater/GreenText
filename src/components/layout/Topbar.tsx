@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { PanelLeft, FilePlus2, FolderOpen, FileText, Save, Wand2, Sparkles, Command, ChevronDown } from 'lucide-react';
+import { PanelLeft, FilePlus2, FolderOpen, FileText, Save, Wand2, Sparkles, Search, ChevronDown } from 'lucide-react';
 import { useEditorStore } from '../../store/useEditorStore';
 
 // We'll pass the functions from App.tsx via props or store for now
@@ -53,7 +53,19 @@ export function Topbar({ createBuffer, openFile, openProjectFolder, saveFile, pr
           <p className="max-w-[88px] m-0 text-[#9aa7b4] text-[11px] leading-tight truncate">Editor</p>
         </div>
       </div>
-      <div className="flex flex-1 items-center justify-end gap-1 overflow-x-auto text-[12px]">
+
+      <button
+        type="button"
+        className="group flex items-center gap-2 h-8 flex-1 min-w-0 max-w-[440px] mx-3 px-2.5 rounded-md border border-[#212b37] bg-[#141a23]/70 text-[#6b7785] hover:border-[#01a982]/45 hover:bg-[#1a222c] hover:text-[#c3ccd6] transition-colors"
+        onClick={() => setCommandPaletteOpen(true)}
+        title="Search every command and text tool (Cmd/Ctrl+P)"
+      >
+        <Search size={14} className="shrink-0 group-hover:text-[#2ece8a]" />
+        <span className="flex-1 min-w-0 truncate text-left text-[12px]">Search commands &amp; tools...</span>
+        <kbd className="shrink-0 px-1.5 py-0.5 rounded border border-[#212b37] bg-[#0f141c] text-[10px] font-mono text-[#6b7785]">⌘P</kbd>
+      </button>
+
+      <div className="flex items-center justify-end gap-1 shrink-0 text-[12px]">
         <button className="flex items-center gap-1.5 h-8 px-2.5 rounded-md hover:bg-[#1a222c] text-[#9aa7b4] hover:text-[#e6edf3] transition-colors shrink-0" type="button" onClick={createBuffer} title="New file (Cmd/Ctrl+N)">
           <FilePlus2 size={15} />
           <span>New</span>
@@ -112,10 +124,6 @@ export function Topbar({ createBuffer, openFile, openProjectFolder, saveFile, pr
         <button className="flex items-center gap-1.5 h-8 px-2.5 rounded-md hover:bg-[#1a222c] text-[#9aa7b4] hover:text-[#e6edf3] transition-colors shrink-0" type="button" onClick={() => setInspectorOpen((value) => !value)} title="Toggle Tools panel">
           <Sparkles size={15} />
           <span>Tools</span>
-        </button>
-        <button className="flex items-center gap-1.5 h-8 px-2.5 rounded-md hover:bg-[#1a222c] text-[#9aa7b4] hover:text-[#e6edf3] transition-colors shrink-0" type="button" onClick={() => setCommandPaletteOpen(true)} title="Command palette (Cmd/Ctrl+P)">
-          <Command size={15} />
-          <span>Commands</span>
         </button>
       </div>
     </header>

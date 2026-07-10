@@ -49,134 +49,113 @@ export function useCommands(
   const zoomOut = useCallback(() => setFontSize((value) => Math.max(value - 1, 8)), [setFontSize]);
   const resetZoom = useCallback(() => setFontSize(13), [setFontSize]);
 
-  const duplicateLine = useCallback(async () => {
-    const action = editorRef.current?.getAction('editor.action.copyLinesDownAction');
-    await action?.run();
-    setStatusMessage('Duplicated the current line/selection.');
-  }, [editorRef, setStatusMessage]);
+  // Shared transform helper: operates on the editor selection (or whole doc) when
+  // the Monaco editor is mounted, and falls back to rewriting the active buffer
+  // content in the store when the editor ref is unavailable, so tools never
+  // silently no-op.
+  const applyTextTransform = useCallback(
+    (transform: (text: string) => string, message: string) => {
+      const editor = editorRef.current;
+      const model = editor?.getModel();
+
+      if (editor && model) {
+        const selection = editor.getSelection();
+        const range = selection && !selection.isEmpty() ? selection : model.getFullModelRange();
+        const next = transform(model.getValueInRange(range));
+        editor.executeEdits('text-transform', [{ range, text: next, forceMoveMarkers: true }]);
+        editor.focus();
+      } else {
+        updateBuffer(activeBufferId, { content: transform(activeBuffer.content), dirty: true });
+      }
+      setStatusMessage(message);
+    },
+    [activeBuffer, activeBufferId, editorRef, setStatusMessage, updateBuffer]
+  );
+
+  const duplicateLine = useCallback(() => {
+    const editor = editorRef.current;
+    if (editor) {
+      void editor.getAction('editor.action.copyLinesDownAction')?.run();
+      setStatusMessage('Duplicated the current line/selection.');
+      return;
+    }
+    updateBuffer(activeBufferId, { content: `${activeBuffer.content}\n${activeBuffer.content}`, dirty: true });
+    setStatusMessage('Duplicated the document.');
+  }, [activeBuffer, activeBufferId, editorRef, setStatusMessage, updateBuffer]);
 
   const removeDuplicateLines = useCallback(() => {
-    const editor = editorRef.current;
-    const model = editor?.getModel();
-    if (!editor || !model) return;
-
-    const selection = editor.getSelection();
-    const range = selection && !selection.isEmpty() ? selection : model.getFullModelRange();
-    const lines = model.getValueInRange(range).split(/\r\n|\r|\n/);
-    const unique = [...new Set(lines)].join('\n');
-
-    editor.executeEdits('remove-duplicates', [{ range, text: unique, forceMoveMarkers: true }]);
-    setStatusMessage('Removed duplicate lines.');
-  }, [editorRef, setStatusMessage]);
+    applyTextTransform(
+      (text) => [...new Set(text.split(/\r\n|\r|\n/))].join('\n'),
+      'Removed duplicate lines.'
+    );
+  }, [applyTextTransform]);
 
   const reverseLines = useCallback(() => {
-    const editor = editorRef.current;
-    const model = editor?.getModel();
-    if (!editor || !model) return;
-
-    const selection = editor.getSelection();
-    const range = selection && !selection.isEmpty() ? selection : model.getFullModelRange();
-    const reversed = model.getValueInRange(range).split(/\r\n|\r|\n/).reverse().join('\n');
-
-    editor.executeEdits('reverse-lines', [{ range, text: reversed, forceMoveMarkers: true }]);
-    setStatusMessage('Reversed lines.');
-  }, [editorRef, setStatusMessage]);
+    applyTextTransform(
+      (text) => text.split(/\r\n|\r|\n/).reverse().join('\n'),
+      'Reversed lines.'
+    );
+  }, [applyTextTransform]);
 
   const toUpperCase = useCallback(() => {
-    const editor = editorRef.current;
-    const model = editor?.getModel();
-    if (!editor || !model) return;
-
-    const selection = editor.getSelection();
-    const range = selection && !selection.isEmpty() ? selection : model.getFullModelRange();
-    const upper = model.getValueInRange(range).toUpperCase();
-
-    editor.executeEdits('to-upper', [{ range, text: upper, forceMoveMarkers: true }]);
-    setStatusMessage('Converted to uppercase.');
-  }, [editorRef, setStatusMessage]);
+    applyTextTransform((text) => text.toUpperCase(), 'Converted to uppercase.');
+  }, [applyTextTransform]);
 
   const toLowerCase = useCallback(() => {
-    const editor = editorRef.current;
-    const model = editor?.getModel();
-    if (!editor || !model) return;
-
-    const selection = editor.getSelection();
-    const range = selection && !selection.isEmpty() ? selection : model.getFullModelRange();
-    const lower = model.getValueInRange(range).toLowerCase();
-
-    editor.executeEdits('to-lower', [{ range, text: lower, forceMoveMarkers: true }]);
-    setStatusMessage('Converted to lowercase.');
-  }, [editorRef, setStatusMessage]);
+    applyTextTransform((text) => text.toLowerCase(), 'Converted to lowercase.');
+  }, [applyTextTransform]);
 
   const zapGremlins = useCallback(() => {
-    const editor = editorRef.current;
-    const model = editor?.getModel();
-    if (!editor || !model) return;
-
-    const selection = editor.getSelection();
-    const range = selection && !selection.isEmpty() ? selection : model.getFullModelRange();
-    // eslint-disable-next-line no-control-regex
-    const zapped = model.getValueInRange(range).replace(/[^\x09\x0A\x0D\x20-\x7E]/g, '');
-
-    editor.executeEdits('zap-gremlins', [{ range, text: zapped, forceMoveMarkers: true }]);
-    setStatusMessage('Zapped gremlins (removed non-ASCII characters).');
-  }, [editorRef, setStatusMessage]);
+    applyTextTransform(
+      // eslint-disable-next-line no-control-regex
+      (text) => text.replace(/[^\x09\x0A\x0D\x20-\x7E]/g, ''),
+      'Zapped gremlins (removed non-ASCII characters).'
+    );
+  }, [applyTextTransform]);
 
   const sortSelectedLines = useCallback(() => {
-    const editor = editorRef.current;
-    const model = editor?.getModel();
-    if (!editor || !model) return;
-
-    const selection = editor.getSelection();
-    const range = selection && !selection.isEmpty() ? selection : model.getFullModelRange();
-    const sorted = model
-      .getValueInRange(range)
-      .split(/\r\n|\r|\n/)
-      .sort((left, right) => left.localeCompare(right, undefined, { numeric: true }))
-      .join('\n');
-
-    editor.executeEdits('sort-lines', [{ range, text: sorted, forceMoveMarkers: true }]);
-    setStatusMessage('Sorted selected lines.');
-  }, [editorRef, setStatusMessage]);
+    applyTextTransform(
+      (text) =>
+        text
+          .split(/\r\n|\r|\n/)
+          .sort((left, right) => left.localeCompare(right, undefined, { numeric: true }))
+          .join('\n'),
+      'Sorted lines.'
+    );
+  }, [applyTextTransform]);
 
   const trimTrailingWhitespace = useCallback(() => {
-    const editor = editorRef.current;
-    const model = editor?.getModel();
-    const text = (model?.getValue() ?? activeBuffer.content).replace(/[ \t]+$/gm, '');
-
-    if (editor && model) {
-      editor.executeEdits('trim-trailing-whitespace', [
-        { range: model.getFullModelRange(), text, forceMoveMarkers: true },
-      ]);
-    } else {
-      updateBuffer(activeBufferId, { content: text });
-    }
-    setStatusMessage('Trimmed trailing whitespace.');
-  }, [activeBuffer, activeBufferId, editorRef, setStatusMessage, updateBuffer]);
+    applyTextTransform((text) => text.replace(/[ \t]+$/gm, ''), 'Trimmed trailing whitespace.');
+  }, [applyTextTransform]);
 
   const insertTimestamp = useCallback(() => {
     const editor = editorRef.current;
     const model = editor?.getModel();
-    if (!editor || !model) return;
+    const stamp = new Date().toISOString();
 
-    const position = editor.getPosition();
-    if (!position) return;
-
-    const text = new Date().toISOString();
-    editor.executeEdits('insert-timestamp', [
-      {
-        range: {
-          startLineNumber: position.lineNumber,
-          startColumn: position.column,
-          endLineNumber: position.lineNumber,
-          endColumn: position.column,
+    if (editor && model) {
+      const position = editor.getPosition() ?? {
+        lineNumber: model.getLineCount(),
+        column: model.getLineMaxColumn(model.getLineCount()),
+      };
+      editor.executeEdits('insert-timestamp', [
+        {
+          range: {
+            startLineNumber: position.lineNumber,
+            startColumn: position.column,
+            endLineNumber: position.lineNumber,
+            endColumn: position.column,
+          },
+          text: stamp,
+          forceMoveMarkers: true,
         },
-        text,
-        forceMoveMarkers: true,
-      },
-    ]);
+      ]);
+      editor.focus();
+    } else {
+      updateBuffer(activeBufferId, { content: `${activeBuffer.content}${stamp}`, dirty: true });
+    }
     setStatusMessage('Inserted ISO timestamp.');
-  }, [editorRef, setStatusMessage]);
+  }, [activeBuffer, activeBufferId, editorRef, setStatusMessage, updateBuffer]);
 
   const commands = useMemo<CommandAction[]>(
     () => [

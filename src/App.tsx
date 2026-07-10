@@ -164,18 +164,41 @@ export default function App() {
   const selectedTemplateRef = useRef<TemplateDefinition>(selectedTemplate);
   selectedTemplateRef.current = selectedTemplate;
 
-  const newFromTemplate = useCallback((template: TemplateDefinition) => {
+  const applyTemplate = useCallback((body: string, template: TemplateDefinition) => {
     createBuffer();
     setTimeout(() => {
       const id = useEditorStore.getState().activeBufferId;
       updateBuffer(id, {
-        name: `new-${template.vendor}-config.txt`,
-        content: template.body,
+        name: `new-${template.vendor.toLowerCase()}-config.txt`,
+        content: body,
         dirty: true,
       });
       autoDetectActiveLanguage();
+      setStatusMessage(`Started a new file from ${template.name}.`);
     }, 50);
-  }, [createBuffer, updateBuffer, autoDetectActiveLanguage]);
+  }, [createBuffer, updateBuffer, autoDetectActiveLanguage, setStatusMessage]);
+
+  const insertTemplate = useCallback((body: string) => {
+    const editor = editorRef.current;
+    const model = editor?.getModel();
+    if (editor && model) {
+      const selection = editor.getSelection() ?? model.getFullModelRange();
+      editor.executeEdits('insert-template', [{ range: selection, text: body, forceMoveMarkers: true }]);
+      editor.focus();
+    } else {
+      const state = useEditorStore.getState();
+      const current = state.buffers.find((b) => b.id === state.activeBufferId);
+      updateBuffer(state.activeBufferId, {
+        content: current?.content ? `${current.content}\n${body}` : body,
+        dirty: true,
+      });
+    }
+    setStatusMessage('Inserted template into the active document.');
+  }, [updateBuffer, setStatusMessage]);
+
+  const newFromTemplate = useCallback((template: TemplateDefinition) => {
+    applyTemplate(template.body, template);
+  }, [applyTemplate]);
 
   const newFromTemplateRef = useRef(newFromTemplate);
   newFromTemplateRef.current = newFromTemplate;
@@ -321,6 +344,8 @@ export default function App() {
         <Inspector 
           selectedTemplate={selectedTemplate}
           availableTemplates={availableTemplates}
+          applyTemplate={applyTemplate}
+          insertTemplate={insertTemplate}
           openSearchResult={openSearchResult}
           runProjectSearch={findInProject}
           runAutomation={runAutomation}

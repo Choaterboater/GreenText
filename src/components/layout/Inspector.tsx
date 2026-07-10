@@ -1,11 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
-import { Sparkles, Search, Wand2, Regex, CaseSensitive, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Sparkles, Search, Wand2, Regex, CaseSensitive, X, FilePlus2, CornerDownLeft } from 'lucide-react';
 import { useEditorStore } from '../../store/useEditorStore';
+import { uniqueTemplateVariables } from '../../utils/helpers';
 import type { TemplateDefinition, SearchResult } from '../../types';
 
 interface InspectorProps {
   selectedTemplate: TemplateDefinition;
   availableTemplates: TemplateDefinition[];
+  applyTemplate: (body: string, template: TemplateDefinition) => void;
+  insertTemplate: (body: string) => void;
   openSearchResult: (result: SearchResult) => void;
   runProjectSearch: (query?: string, opts?: { regex?: boolean; caseSensitive?: boolean }) => Promise<void>;
   runAutomation: (id: string) => void;
@@ -23,6 +26,8 @@ interface InspectorProps {
 export function Inspector({
   selectedTemplate,
   availableTemplates,
+  applyTemplate,
+  insertTemplate,
   openSearchResult,
   runProjectSearch,
   openAutomationDraft,
@@ -57,6 +62,25 @@ export function Inspector({
   const [useRegex, setUseRegex] = useState(false);
   const [caseSensitive, setCaseSensitive] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const templateVariables = useMemo(
+    () => uniqueTemplateVariables(selectedTemplate),
+    [selectedTemplate]
+  );
+  const [templateValues, setTemplateValues] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    setTemplateValues({});
+  }, [selectedTemplate.id]);
+
+  const renderTemplateBody = () => {
+    let output = selectedTemplate.body;
+    for (const variable of templateVariables) {
+      const value = templateValues[variable];
+      output = output.replaceAll(`{{${variable}}}`, value && value.length > 0 ? value : `{{${variable}}}`);
+    }
+    return output;
+  };
 
   useEffect(() => {
     if (searchFocusRequest > 0) {
@@ -108,6 +132,46 @@ export function Inspector({
                 {tag}
               </span>
             ))}
+          </div>
+
+          {templateVariables.length > 0 ? (
+            <div className="flex flex-col gap-1 mt-1">
+              <span className="text-[10px] uppercase tracking-wider text-[#6b7785]">Variables</span>
+              {templateVariables.map((variable) => (
+                <label key={variable} className="flex items-center gap-1.5 text-[11px] text-[#9aa7b4]">
+                  <span className="w-[92px] shrink-0 truncate font-mono text-[#7f8b99]" title={variable}>{variable}</span>
+                  <input
+                    className="flex-1 min-w-0 h-[26px] px-1.5 rounded border border-[#212b37] bg-[#141a23]/90 text-[#e6edf3] text-[11px] outline-none focus:border-[#01a982]/60"
+                    placeholder={variable.replaceAll('_', ' ')}
+                    value={templateValues[variable] ?? ''}
+                    onChange={(event) =>
+                      setTemplateValues((prev) => ({ ...prev, [variable]: event.target.value }))
+                    }
+                  />
+                </label>
+              ))}
+            </div>
+          ) : null}
+
+          <div className="flex gap-1.5 mt-1">
+            <button
+              type="button"
+              className="flex flex-1 items-center justify-center gap-1.5 h-8 rounded-md border border-[#01a982]/45 bg-gradient-to-br from-[#01a982] to-[#018f6e] text-[#04130e] text-[11px] font-bold hover:brightness-110 transition"
+              title="Open this template in a brand new tab"
+              onClick={() => applyTemplate(renderTemplateBody(), selectedTemplate)}
+            >
+              <FilePlus2 size={14} />
+              New tab
+            </button>
+            <button
+              type="button"
+              className="flex flex-1 items-center justify-center gap-1.5 h-8 rounded-md border border-[#212b37] bg-[#141a23]/90 text-[#c3ccd6] text-[11px] font-semibold hover:border-[#30404f] hover:bg-[#1a222c] transition"
+              title="Insert this template at the cursor in the active document"
+              onClick={() => insertTemplate(renderTemplateBody())}
+            >
+              <CornerDownLeft size={14} />
+              Insert here
+            </button>
           </div>
         </div>
       </section>
@@ -215,8 +279,8 @@ export function Inspector({
             <strong className="text-[#e6edf3]">{automationDraft.title}</strong>
             <pre className="m-0 max-h-[220px] overflow-auto text-[#e6edf3] whitespace-pre-wrap font-mono text-[11px] leading-snug">{automationDraft.content}</pre>
             <div className="flex gap-1.5">
-              <button className="flex-1" type="button" onClick={openAutomationDraft}>Open as note</button>
-              <button className="flex-1" type="button" onClick={insertAutomationDraft}>Insert</button>
+              <button className="flex-1 h-7 rounded-md border border-[#01a982]/45 bg-[#01a982]/10 text-[#2ece8a] text-[11px] font-semibold hover:bg-[#01a982]/20 transition" type="button" onClick={openAutomationDraft}>Open as note</button>
+              <button className="flex-1 h-7 rounded-md border border-[#212b37] bg-[#141a23]/90 text-[#c3ccd6] text-[11px] font-semibold hover:border-[#30404f] hover:bg-[#1a222c] transition" type="button" onClick={insertAutomationDraft}>Insert</button>
             </div>
           </div>
         ) : (
