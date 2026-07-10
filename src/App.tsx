@@ -75,40 +75,45 @@ export default function App() {
     setStatusMessage('Formatted document.');
   }, [activeBuffer.language, setStatusMessage]);
 
-  const findInProject = useCallback(async () => {
+  const findInProject = useCallback(async (
+    rawQuery?: string,
+    opts?: { regex?: boolean; caseSensitive?: boolean }
+  ) => {
     if (projectFiles.length === 0) {
-      setStatusMessage('Open a project folder before using Find in Project.');
+      setStatusMessage('Open a project folder before searching across files.');
       return;
     }
 
-    const query = window.prompt('Find in project');
-    if (!query?.trim()) return;
-    const useRegex = window.confirm('Use regex search? OK = regex, Cancel = literal');
-    const caseSensitive = window.confirm('Case-sensitive search? OK = yes, Cancel = no');
-    
+    const query = (rawQuery ?? '').trim();
+    if (!query) return;
+    const useRegex = opts?.regex ?? false;
+    const caseSensitive = opts?.caseSensitive ?? false;
+
+    setProjectSearchTitle(`Searching for "${query}"...`);
     try {
       const results = await invoke<SearchResult[]>('search_project_files', {
         root: projectRoot,
-        query: query.trim(),
+        query,
         regex: useRegex,
         caseSensitive,
       });
-      
-      const matches = results
-        .slice(0, 120)
-        .map((result) => `- ${result.relativePath}:${result.lineNumber}: \`${result.line}\``);
-        
-      setProjectSearchResults(results);
-      setProjectSearchTitle(`Project search: ${query}`);
 
-      setAutomationDraft({
-        title: `Project search: ${query}`,
-        content: `# Project search: ${query}\n\n- Root: ${projectRoot ?? 'unknown'}\n- Files scanned: ${projectFiles.length}\n- Matches shown: ${matches.length}\n\n${matches.length ? matches.join('\n') : '- No matches found.'}\n`,
-      });
+      setProjectSearchResults(results);
+      setProjectSearchTitle(
+        results.length
+          ? `${results.length} match${results.length === 1 ? '' : 'es'} for "${query}"`
+          : `No matches for "${query}"`
+      );
+      setStatusMessage(
+        results.length
+          ? `Found ${results.length} match${results.length === 1 ? '' : 'es'} across ${projectFiles.length} files.`
+          : `No matches for "${query}".`
+      );
     } catch (e: any) {
+      setProjectSearchTitle(`Search failed`);
       setStatusMessage(`Search failed: ${e.message || String(e)}`);
     }
-  }, [projectFiles.length, projectRoot, setAutomationDraft, setProjectSearchResults, setProjectSearchTitle, setStatusMessage]);
+  }, [projectFiles.length, projectRoot, setProjectSearchResults, setProjectSearchTitle, setStatusMessage]);
 
   const scanActiveProblems = useCallback(async () => {
     setStatusMessage('Scanning for problems is not implemented in this generic version yet.');
@@ -316,9 +321,8 @@ export default function App() {
         <Inspector 
           selectedTemplate={selectedTemplate}
           availableTemplates={availableTemplates}
-          projectSearchTitle={useEditorStore.getState().projectSearchTitle}
-          projectSearchResults={useEditorStore.getState().projectSearchResults}
           openSearchResult={openSearchResult}
+          runProjectSearch={findInProject}
           runAutomation={runAutomation}
           openAutomationDraft={openAutomationDraft}
           insertAutomationDraft={insertAutomationDraft}

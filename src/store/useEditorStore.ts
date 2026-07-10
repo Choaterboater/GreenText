@@ -43,6 +43,8 @@ export interface AppState {
 
   inspectorOpen: boolean;
   setInspectorOpen: (val: boolean | ((prev: boolean) => boolean)) => void;
+  searchFocusRequest: number;
+  requestSearchFocus: () => void;
 
   statusMessage: string;
   setStatusMessage: (msg: string) => void;
@@ -143,6 +145,8 @@ export const useEditorStore = create<AppState>((set) => ({
 
   inspectorOpen: false,
   setInspectorOpen: (updater) => set((state) => ({ inspectorOpen: typeof updater === 'function' ? updater(state.inspectorOpen) : updater })),
+  searchFocusRequest: 0,
+  requestSearchFocus: () => set((state) => ({ inspectorOpen: true, searchFocusRequest: state.searchFocusRequest + 1 })),
 
   statusMessage: 'GreenText is ready.',
   setStatusMessage: (statusMessage) => set({ statusMessage }),
