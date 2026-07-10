@@ -2,20 +2,20 @@
 
 GreenText is a modern, cross-platform standalone network configuration editor built to be a massive upgrade over generic text editors. Think of it as a lightning-fast combination of BBEdit and Termius, built specifically for network engineers working with **Aruba**, **Juniper**, and **Mist**.
 
-![GreenText — Editor](docs/screenshots/01-editor.png)
+
 
 ## What Makes GreenText Different?
 
 Standard text editors break when you paste massive firewall policies or dump thousands of lines of log files containing weird control characters. GreenText is purpose-built to handle massive networking files safely while integrating directly with your remote systems.
 
-### 🌟 Core Capabilities
+### Core Capabilities
 - **Tauri + React + TypeScript + Tailwind CSS** architecture.
 - **Monaco Editor Engine** with specific parsing optimizations for massive text payloads.
 - **Deep-Slate UI** modeled closely on the GreenCLI design system.
 - **Multi-File Workspace** handling directories gracefully with instant Rust-powered regex search.
 - **Interactive Diff Engine** for comparing dirty config against saved files.
 
-### 🛠 Powerful Text Processing
+### Powerful Text Processing
 The **Inspector Panel** contains an armory of tools that instantly clean up bad configs:
 - **Pretty Indent**: Auto-format entire Aruba/Juniper configurations in one click.
 - **Process Duplicate Lines**: Deduplicate massive prefix/access lists without sorting them.
@@ -23,7 +23,7 @@ The **Inspector Panel** contains an armory of tools that instantly clean up bad 
 - **Sort / Reverse Lines**: Organize long blocks of interfaces alphabetically.
 - **Change Case**: Rapidly normalize standard uppercase `DESCRIPTION` fields.
 
-### 🔌 Connected Workflows
+### Connected Workflows
 - **SSH / Telnet Terminal**: `xterm.js` embedded directly in your editor tabs to hit remote boxes.
 - **SFTP Browser**: Graphically browse remote file systems over SSH and pull files right into GreenText.
 - **Encrypted Credential Vault**: Store passwords and keys locally via AES-256-GCM.
