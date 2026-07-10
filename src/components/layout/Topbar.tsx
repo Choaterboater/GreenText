@@ -1,4 +1,5 @@
-import { PanelLeft, FilePlus2, FolderOpen, FileText, Save, Wand2, Sparkles, Command } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { PanelLeft, FilePlus2, FolderOpen, FileText, Save, Wand2, Sparkles, Command, ChevronDown } from 'lucide-react';
 import { useEditorStore } from '../../store/useEditorStore';
 
 // We'll pass the functions from App.tsx via props or store for now
@@ -14,6 +15,26 @@ export function Topbar({ createBuffer, openFile, openProjectFolder, saveFile, pr
   const setSidebarOpen = useEditorStore((s) => s.setSidebarOpen);
   const setInspectorOpen = useEditorStore((s) => s.setInspectorOpen);
   const setCommandPaletteOpen = useEditorStore((s) => s.setCommandPaletteOpen);
+  const [openMenu, setOpenMenu] = useState(false);
+  const openMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!openMenu) return;
+    const onPointerDown = (event: MouseEvent) => {
+      if (openMenuRef.current && !openMenuRef.current.contains(event.target as Node)) {
+        setOpenMenu(false);
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpenMenu(false);
+    };
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [openMenu]);
 
   return (
     <header className="flex items-center h-11 px-3 border-b border-[#212b37] bg-[#0f141c]/80 backdrop-blur-md sticky top-0 z-50">
@@ -37,14 +58,48 @@ export function Topbar({ createBuffer, openFile, openProjectFolder, saveFile, pr
           <FilePlus2 size={15} />
           <span>New</span>
         </button>
-        <button className="flex items-center gap-1.5 h-8 px-2.5 rounded-md hover:bg-[#1a222c] text-[#9aa7b4] hover:text-[#e6edf3] transition-colors shrink-0" type="button" onClick={openFile} title="Open a single file">
-          <FileText size={15} />
-          <span>Open File</span>
-        </button>
-        <button className="flex items-center gap-1.5 h-8 px-2.5 rounded-md hover:bg-[#1a222c] text-[#9aa7b4] hover:text-[#e6edf3] transition-colors shrink-0" type="button" onClick={openProjectFolder} title="Open a project folder">
-          <FolderOpen size={15} />
-          <span>Open Folder</span>
-        </button>
+        <div className="relative shrink-0" ref={openMenuRef}>
+          <button
+            className={`flex items-center gap-1.5 h-8 px-2.5 rounded-md transition-colors ${openMenu ? 'bg-[#1a222c] text-[#e6edf3]' : 'hover:bg-[#1a222c] text-[#9aa7b4] hover:text-[#e6edf3]'}`}
+            type="button"
+            onClick={() => setOpenMenu((value) => !value)}
+            title="Open a file or folder"
+            aria-haspopup="menu"
+            aria-expanded={openMenu}
+          >
+            <FolderOpen size={15} />
+            <span>Open</span>
+            <ChevronDown size={13} className={`transition-transform ${openMenu ? 'rotate-180' : ''}`} />
+          </button>
+          {openMenu ? (
+            <div className="absolute right-0 top-[calc(100%+4px)] z-50 w-52 rounded-md border border-[#212b37] bg-[#0f141c] shadow-xl shadow-black/40 py-1" role="menu">
+              <button
+                className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-[12px] text-[#c3ccd6] hover:bg-[#1a222c] hover:text-[#e6edf3]"
+                type="button"
+                role="menuitem"
+                onClick={() => { setOpenMenu(false); openFile(); }}
+              >
+                <FileText size={15} className="text-[#01a982] shrink-0" />
+                <span className="flex flex-col">
+                  <span>Open File...</span>
+                  <span className="text-[10px] text-[#6b7785]">A single document in a new tab</span>
+                </span>
+              </button>
+              <button
+                className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-[12px] text-[#c3ccd6] hover:bg-[#1a222c] hover:text-[#e6edf3]"
+                type="button"
+                role="menuitem"
+                onClick={() => { setOpenMenu(false); openProjectFolder(); }}
+              >
+                <FolderOpen size={15} className="text-[#ff8300] shrink-0" />
+                <span className="flex flex-col">
+                  <span>Open Folder...</span>
+                  <span className="text-[10px] text-[#6b7785]">A whole project in the sidebar</span>
+                </span>
+              </button>
+            </div>
+          ) : null}
+        </div>
         <button className="flex items-center gap-1.5 h-8 px-2.5 rounded-md hover:bg-[#1a222c] text-[#9aa7b4] hover:text-[#e6edf3] transition-colors shrink-0" type="button" onClick={saveFile} title="Save (Cmd/Ctrl+S)">
           <Save size={15} />
           <span>Save</span>
