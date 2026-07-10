@@ -688,9 +688,25 @@ fn setup_menu(app: &AppHandle) -> tauri::Result<()> {
         .build()?,
     )
     .item(
+      &SubmenuBuilder::new(app, "Text")
+        .text("text-upper", "Change Case: UPPERCASE")
+        .text("text-lower", "Change Case: lowercase")
+        .separator()
+        .text("text-sort", "Sort Lines")
+        .text("text-reverse", "Reverse Lines")
+        .text("text-dedupe", "Process Duplicate Lines")
+        .separator()
+        .text("text-zap", "Zap Gremlins")
+        .text("text-trim", "Trim Trailing Whitespace")
+        .build()?,
+    )
+    .item(
       &SubmenuBuilder::new(app, "View")
         .text("view-toggle-sidebar", "Toggle Sidebar")
         .text("view-toggle-tools", "Toggle Tools")
+        .separator()
+        .text("view-toggle-wrap", "Toggle Word Wrap")
+        .text("view-toggle-invisibles", "Show Invisibles")
         .separator()
         .text("theme-neutral", "Editor Theme: Neutral Dark")
         .text("theme-google", "Editor Theme: Google Gray")
@@ -704,6 +720,15 @@ fn setup_menu(app: &AppHandle) -> tauri::Result<()> {
         .text("view-edit", "Edit Mode")
         .text("view-split", "Split View")
         .text("view-diff", "Diff Against Saved")
+        .separator()
+        .text("view-terminal", "SSH Terminal")
+        .text("view-vault", "Credential Vault")
+        .text("view-mcp", "MCP Servers")
+        .separator()
+        .text("view-regex", "Pattern Playground (Regex)")
+        .text("view-sftp", "SFTP Browser")
+        .separator()
+        .text("view-help", "Help & Shortcuts")
         .build()?,
     )
     .item(
