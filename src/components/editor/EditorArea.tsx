@@ -1,5 +1,6 @@
 import { useMemo, useCallback } from 'react';
 import Editor, { DiffEditor, type BeforeMount, type OnMount } from '@monaco-editor/react';
+import { X } from 'lucide-react';
 import type * as monacoEditor from 'monaco-editor';
 import { useEditorStore } from '../../store/useEditorStore';
 import { TerminalTab } from '../TerminalTab';
@@ -23,6 +24,7 @@ export function EditorArea({ editorRef, orderedBuffers }: EditorAreaProps) {
   const setCursorPosition = useEditorStore(s => s.setCursorPosition);
   
   const viewMode = useEditorStore(s => s.viewMode);
+  const setViewMode = useEditorStore(s => s.setViewMode);
   const compareBufferId = useEditorStore(s => s.compareBufferId);
   const visualTheme = useEditorStore(s => s.visualTheme);
   const wordWrap = useEditorStore(s => s.wordWrap);
@@ -96,8 +98,33 @@ export function EditorArea({ editorRef, orderedBuffers }: EditorAreaProps) {
     });
   }, [activeBuffer.id, activeBuffer.savedContent, updateBuffer, setCursorPosition, editorRef]);
 
+  const viewLabels: Record<string, string> = {
+    terminal: 'SSH Terminal',
+    vault: 'Credential Vault',
+    mcp: 'MCP Servers',
+    regex: 'Regex Playground',
+    sftp: 'SFTP Browser',
+    help: 'Help & Shortcuts',
+    diff: 'Diff Against Saved',
+    compare: 'Compare Buffers',
+    split: 'Split View',
+  };
+  const showBackBar = viewMode !== 'edit';
+
   return (
     <div className="flex-1 min-h-0 min-w-0 overflow-hidden relative">
+      {showBackBar ? (
+        <button
+          type="button"
+          onClick={() => setViewMode('edit')}
+          className="absolute top-2 right-3 z-30 flex items-center gap-1.5 h-7 px-2.5 rounded-md border border-[#212b37] bg-[#0f141c]/95 text-[#c3ccd6] text-[11px] shadow-lg shadow-black/30 hover:border-[#01a982]/60 hover:text-[#e6edf3] transition-colors"
+          title="Return to the editor"
+        >
+          <X size={13} />
+          <span>Back to editor</span>
+          <span className="text-[10px] text-[#6b7785]">({viewLabels[viewMode] ?? viewMode})</span>
+        </button>
+      ) : null}
       {viewMode === 'terminal' ? (
         <TerminalTab isActive={true} />
       ) : viewMode === 'vault' ? (
