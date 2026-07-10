@@ -304,6 +304,7 @@ export default function App() {
             orderedBuffers={orderedBuffers}
             togglePinBuffer={togglePinBuffer}
             closeBuffer={closeBuffer}
+            createBuffer={createBuffer}
           />
           <EditorArea 
             editorRef={editorRef}

@@ -4,15 +4,22 @@ interface TabStripProps {
   orderedBuffers: any[];
   togglePinBuffer: (id: string) => void;
   closeBuffer: (id: string) => void;
+  createBuffer: () => void;
 }
 
-export function TabStrip({ orderedBuffers, togglePinBuffer, closeBuffer }: TabStripProps) {
+export function TabStrip({ orderedBuffers, togglePinBuffer, closeBuffer, createBuffer }: TabStripProps) {
   const activeBufferId = useEditorStore(s => s.activeBufferId);
   const setActiveBufferId = useEditorStore(s => s.setActiveBufferId);
   const buffers = useEditorStore(s => s.buffers);
 
   return (
-    <div className="flex gap-1 h-8 pt-[3px] px-1 border-b border-[#212b37] bg-[#0a0e14]/80 overflow-x-auto">
+    <div
+      className="flex items-stretch gap-1 h-8 pt-[3px] px-1 border-b border-[#212b37] bg-[#0a0e14]/80 overflow-x-auto"
+      onDoubleClick={(event) => {
+        if (event.target === event.currentTarget) createBuffer();
+      }}
+      title="Double-click empty space to open a new tab"
+    >
       {orderedBuffers.map((buffer) => (
         <button
           className={`flex items-center justify-between min-w-[118px] max-w-[190px] h-[28px] px-2 border border-transparent rounded-t-md text-[11px] ${buffer.id === activeBufferId ? 'bg-[#0b0f16] border-[#01a982]/45 border-b-[#0b0f16] text-[#e6edf3] z-10' : 'bg-[#141a23]/60 text-[#9aa7b4] hover:bg-[#1a222c]'} -mb-[1px]`}
@@ -59,6 +66,21 @@ export function TabStrip({ orderedBuffers, togglePinBuffer, closeBuffer }: TabSt
           )}
         </button>
       ))}
+      <button
+        className="grid place-items-center w-7 h-[28px] shrink-0 rounded-t-md text-[15px] leading-none text-[#5d6b7a] hover:text-[#01a982] hover:bg-[#141a23]/60"
+        type="button"
+        title="New tab (Cmd/Ctrl+N)"
+        aria-label="New tab"
+        onClick={createBuffer}
+      >
+        +
+      </button>
+      <div
+        className="flex-1 min-w-[24px] cursor-default"
+        onDoubleClick={createBuffer}
+        title="Double-click to open a new tab"
+        aria-hidden="true"
+      ></div>
     </div>
   );
 }
