@@ -77,7 +77,8 @@ export function Inspector({
     let output = selectedTemplate.body;
     for (const variable of templateVariables) {
       const value = templateValues[variable];
-      output = output.replaceAll(`{{${variable}}}`, value && value.length > 0 ? value : `{{${variable}}}`);
+      const literal = value && value.length > 0 ? value : `{{${variable}}}`;
+      output = output.replaceAll(`{{${variable}}}`, () => literal);
     }
     return output;
   };

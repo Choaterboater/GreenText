@@ -165,18 +165,15 @@ export default function App() {
   selectedTemplateRef.current = selectedTemplate;
 
   const applyTemplate = useCallback((body: string, template: TemplateDefinition) => {
-    createBuffer();
-    setTimeout(() => {
-      const id = useEditorStore.getState().activeBufferId;
-      updateBuffer(id, {
-        name: `new-${template.vendor.toLowerCase()}-config.txt`,
-        content: body,
-        dirty: true,
-      });
-      autoDetectActiveLanguage();
-      setStatusMessage(`Started a new file from ${template.name}.`);
-    }, 50);
-  }, [createBuffer, updateBuffer, autoDetectActiveLanguage, setStatusMessage]);
+    const id = createBuffer();
+    updateBuffer(id, {
+      name: `new-${template.vendor.toLowerCase()}-config.txt`,
+      content: body,
+      language: template.language,
+      dirty: true,
+    });
+    setStatusMessage(`Started a new file from ${template.name}.`);
+  }, [createBuffer, updateBuffer, setStatusMessage]);
 
   const insertTemplate = useCallback((body: string) => {
     const editor = editorRef.current;

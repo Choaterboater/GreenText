@@ -25,6 +25,7 @@ export function useFiles(
     setBuffers((prev) => [...prev, buffer]);
     setActiveBufferId(buffer.id);
     setStatusMessage('Created new buffer.');
+    return buffer.id;
   }, [setBuffers, setActiveBufferId, setStatusMessage]);
 
   const loadFileIntoBuffer = useCallback((file: OpenedFile) => {
